@@ -1,15 +1,12 @@
 using UnityEngine;
 
-[RequireComponent(typeof(SpriteRenderer))]
-public abstract class SpriteObject : MonoBehaviour
+public class SpriteObject : MonoBehaviour
 {
     [SerializeField] private Sprite _sprite;
-
-    private SpriteRenderer _spriteRenderer;
+    [SerializeField] private SpriteRenderer _spriteRenderer;
 
     private void Awake()
     {
-        _spriteRenderer = GetComponent<SpriteRenderer>();
         _spriteRenderer.sprite = _sprite;
     }
 
@@ -20,7 +17,7 @@ public abstract class SpriteObject : MonoBehaviour
 
     public void ChangeVisible()
     {
-        if (_spriteRenderer.enabled == false)
+        if (!_spriteRenderer.enabled)
             _spriteRenderer.enabled = true;
         else
             _spriteRenderer.enabled = false;

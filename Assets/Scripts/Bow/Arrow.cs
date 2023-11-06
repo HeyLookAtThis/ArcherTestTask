@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 
 public class Arrow : SpriteObject
@@ -14,25 +15,27 @@ public class Arrow : SpriteObject
             return;
 
         transform.position = Vector2.MoveTowards(transform.position, _target.position, _speed * Time.deltaTime);
-        transform.LookAt(_target);
+        transform.DOLookAt(_target.position, Time.deltaTime);
 
         if (transform.position == _target.position)
-        {
-            ChangeVisible();
-            _isFlying = false;
-        }
+            TurnOff();
     }
 
     public void TakeFlight(Vector2 position, Transform target, float speed)
     {
         transform.position = position;
+        _target = target;
+        _speed = speed;
 
         if (!_isFlying)
             _isFlying = true;
 
-        _target = target;
-        _speed = speed;
-
         ChangeVisible();
+    }
+
+    private void TurnOff()
+    {
+        ChangeVisible();
+        _isFlying = false;
     }
 }

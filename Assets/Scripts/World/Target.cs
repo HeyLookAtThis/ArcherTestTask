@@ -1,6 +1,5 @@
 using DG.Tweening;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Target : MonoBehaviour
@@ -10,6 +9,8 @@ public class Target : MonoBehaviour
     [SerializeField] private MousePositionReader _mousePositionReader;
     [SerializeField] private GameObject _topPoint;
     [SerializeField] private GameObject _bottomPoint;
+
+    private Coroutine _topPointMover;
 
     private Vector2 _startingTopPosition;
     private Vector2 _startingBottomPosition;
@@ -35,7 +36,7 @@ public class Target : MonoBehaviour
         _maxYAxisTopPointCoordinate = 5f;
         _minYAxisTopPointCoordinate = -1.3f;
 
-        _minXAxisCoordinate = -4f;
+        _minXAxisCoordinate = -2f;
         _maxXAxisCoordinate = 10f;
 
         _groundYAxisCoordinate = -3f;
@@ -47,13 +48,15 @@ public class Target : MonoBehaviour
     private void OnEnable()
     {
         _archer.ClickedDown += OnSetStartinPosition;
-        _mousePositionReader.PositionChanged += OnMove;
+        _archer.ClickedUp += OnStartTopPointMove;
+        _mousePositionReader.PositionChanged += OnShiftTargetPoints;
     }
 
     private void OnDisable()
     {
         _archer.ClickedDown -= OnSetStartinPosition;
-        _mousePositionReader.PositionChanged -= OnMove;
+        _archer.ClickedUp -= OnStartTopPointMove;
+        _mousePositionReader.PositionChanged -= OnShiftTargetPoints;
     }
 
     private void OnSetStartinPosition()
@@ -63,21 +66,21 @@ public class Target : MonoBehaviour
         _mousePosition = new Vector2(_groundYAxisCoordinate, _minYAxisTopPointCoordinate);
     }
 
-    private void OnMove(Vector2 shiftMousePosition)
+    private void OnShiftTargetPoints(Vector2 shiftMousePosition)
     {
         _mousePosition += shiftMousePosition;
 
-        MoveButtonPoint();
-        MoveTopPoint();
+        ShiftButtonPoint();
+        ShiftTopPoint();
     }
 
-    private void MoveTopPoint()
+    private void ShiftTopPoint()
     {
         _mousePosition.y = GetCorrectCoordinate(_mousePosition.y, _minYAxisTopPointCoordinate, _maxYAxisTopPointCoordinate);
-        _topPoint.transform.DOMove(new Vector2(_bottomPoint.transform.position.x, _mousePosition.y), Time.deltaTime);
+        _topPoint.transform.DOMoveY(_mousePosition.y, Time.deltaTime);
     }
 
-    private void MoveButtonPoint()
+    private void ShiftButtonPoint()
     {
         _mousePosition.x = GetCorrectCoordinate(_mousePosition.x, _minXAxisCoordinate, _maxXAxisCoordinate);
         _bottomPoint.transform.DOMoveX(_mousePosition.x, Time.deltaTime);
@@ -91,5 +94,27 @@ public class Target : MonoBehaviour
             coordinate = startingCoordinate;
 
         return coordinate;
+    }
+
+    private void OnStartTopPointMove()
+    {
+        if(_topPointMover != null)
+            StopCoroutine(_topPointMover);
+
+        _topPointMover = StartCoroutine(TopPointMover());
+    }
+
+    private IEnumerator TopPointMover()
+    {
+        var waitTime = new WaitForEndOfFrame();
+
+        while(_topPoint.transform.position != _bottomPoint.transform.position)
+        {
+            _topPoint.transform.position = Vector3.MoveTowards(_topPoint.transform.position, _bottomPoint.transform.position, _speed * Time.deltaTime);
+            yield return waitTime;
+        }
+
+        if (_topPoint.transform.position == _bottomPoint.transform.position)
+            yield break;
     }
 }

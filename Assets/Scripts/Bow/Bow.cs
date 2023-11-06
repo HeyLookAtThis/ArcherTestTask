@@ -1,4 +1,3 @@
-using Spine;
 using Spine.Unity;
 using UnityEngine;
 
@@ -8,7 +7,8 @@ public class Bow : MonoBehaviour
     [SerializeField] private float _shootForse;
     [SerializeField] private Arrow _arrowPrefab;
     [SerializeField] private Target _target;
-    [SerializeField] private AnimationsPlayer _animationsPlayer;
+    [SerializeField] private Archer _archer;
+    [SerializeField] private Transform _quiver;
 
     private BoneFollower _boneFollower;
     private Arrow _arrow;
@@ -20,12 +20,12 @@ public class Bow : MonoBehaviour
 
     private void OnEnable()
     {
-        _animationsPlayer.State.Event += OnShoot;
+        _archer.ClickedUp += OnShoot;
     }
 
     private void OnDisable()
     {
-        _animationsPlayer.State.Event -= OnShoot;
+        _archer.ClickedUp -= OnShoot;
     }
 
     private void Start()
@@ -33,13 +33,12 @@ public class Bow : MonoBehaviour
         _boneFollower.followXYPosition = true;
         _boneFollower.followBoneRotation = true;
 
-        _arrow = Instantiate(_arrowPrefab, transform);
+        _arrow = Instantiate(_arrowPrefab, _quiver);
     }
 
-    private void OnShoot(TrackEntry trackEntry, Spine.Event shoot)
+    private void OnShoot()
     {
-        if (shoot.Data == _animationsPlayer.TargetEventData)
-            if (!_arrow.IsFlying)
-                _arrow.TakeFlight(transform.position, _target.TopTransform, _shootForse);
+        if (!_arrow.IsFlying)
+            _arrow.TakeFlight(transform.position, _target.TopTransform, _shootForse);
     }
 }
